@@ -1,3 +1,3 @@
 from .dataset import DogClfDataset
-from .utils import Letterbox, PlaneResize
+from .utils import Letterbox, VanillaResize
 

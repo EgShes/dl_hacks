@@ -69,7 +69,7 @@ class Letterbox:
             return image, info
 
 
-class PlaneResize:
+class VanillaResize:
 
     def __init__(self, height, width):
         self.height = height
