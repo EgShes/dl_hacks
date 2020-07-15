@@ -2,13 +2,14 @@ hydra:
     run:
         dir: .
 # general
-batch_size: 32
+batch_size: 16
 num_workers: 6
 num_epochs: 100
-gpu_num: 1
+gpu_num: 0
 save_path: models
 experiment_name: test
 seed: 21
+test_run: true
 # data
 data_path: data
 height: 400

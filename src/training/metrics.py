@@ -4,7 +4,6 @@ from sklearn.metrics import precision_score
 
 @torch.no_grad()
 def accuracy(pred, gt):
-    pred = torch.argmax(pred, -1)
     acc = (torch.argmax(pred, -1) == gt).sum() / len(gt)
     return acc
 
