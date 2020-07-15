@@ -51,13 +51,13 @@ class Letterbox:
 
         info['orig_size'] = (src_h, src_w)
 
-        if scale != 1.0:
+        if src_w / dst_w != 1.0 or src_h / dst_h != 1.0:
             image_resized = cv2.resize(image, (int(scale * src_w), int(scale * src_h)), interpolation=cv2.INTER_LANCZOS4, )
             resized_h, resized_w = image_resized.shape[:2]
         else:
             return image, info
 
-        if src_w == resized_w and src_h == resized_h:
+        if dst_w == resized_w and dst_h == resized_h:
             return image_resized, info
         else:
             pad_w = (dst_w - resized_w) / 2
