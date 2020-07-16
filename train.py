@@ -12,7 +12,7 @@ from torch.utils.tensorboard import SummaryWriter
 
 from src.data import DogClfDataset, Letterbox, VanillaResize
 from src.models import resnet50
-from src.training import RAdam, train_epoch, evaluate_epoch, fix_seeds, write2tensorboard
+from src.training import RAdam, train_epoch, evaluate_epoch, fix_seeds, write2tensorboard, write2tensorboard_test
 
 
 @hydra.main('train_config.yaml')
@@ -79,7 +79,7 @@ def train_model(args):
                 'model_state_dict': model.state_dict(),
                 'experiment_name': args.experiment_name,
                 'writer_path': osp.join('runs', experiment_name)
-            }, osp.join(args.save_path, f'{experiment_name}_{epoch}.pth'))
+            }, osp.join(args.save_path, f'{experiment_name}_best.pth'))
         else:
             no_improvements += 1
 
@@ -88,6 +88,11 @@ def train_model(args):
         if not args.test_run:
             write2tensorboard(train_metrics, eval_metrics, writer, epoch)
             writer.add_scalar('lr', optimizer.param_groups[0]['lr'])
+
+    checkpoint = torch.load(osp.join(args.save_path, f'{experiment_name}_best.pth'))
+    model.load_state_dict(checkpoint['model_state_dict'])
+    test_metrics = evaluate_epoch(model, test_dl, criterion, device)
+    write2tensorboard_test(test_metrics, writer)
 
 
 if __name__ == '__main__':

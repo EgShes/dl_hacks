@@ -18,3 +18,8 @@ def write2tensorboard(train_metrics, val_metrics, writer, epoch):
         train_val, val_val = train_metrics[key], val_metrics[key]
         writer.add_scalar(f'{key}/{key}_train', train_val, epoch)
         writer.add_scalar(f'{key}/{key}_val', val_val, epoch)
+
+
+def write2tensorboard_test(test_metrics, writer):
+    for key, val in test_metrics.items():
+        writer.add_scalar(f'{key}/{key}_test', val)
