@@ -4,20 +4,20 @@ hydra:
 # general
 batch_size: 16
 num_workers: 6
-num_epochs: 100
-gpu_num: 0
+num_epochs: 30
+gpu_num: 1
 save_path: models
 experiment_name: test
 seed: 21
-test_run: true
+test_run: false
 # data
 data_path: data
 height: 400
 width: 400
-resizer_type: letterbox  # vanilla, letterbox
+resizer_type: vanilla  # vanilla, letterbox
 # training
-early_stopping: 15
+early_stopping: 7
 learning_rate: 1e-3
 weight_decay: 0.
 lr_factor: 0.5
-lr_patience: 5
+lr_patience: 3

@@ -92,7 +92,8 @@ def train_model(args):
     checkpoint = torch.load(osp.join(args.save_path, f'{experiment_name}_best.pth'))
     model.load_state_dict(checkpoint['model_state_dict'])
     test_metrics = evaluate_epoch(model, test_dl, criterion, device)
-    write2tensorboard_test(test_metrics, writer)
+    if not args.test_run:
+        write2tensorboard_test(test_metrics, writer)
 
 
 if __name__ == '__main__':

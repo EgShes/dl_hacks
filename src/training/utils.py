@@ -1,6 +1,7 @@
 import torch
 import random
 import numpy as np
+from time import sleep
 
 
 def fix_seeds(seed):
@@ -23,3 +24,5 @@ def write2tensorboard(train_metrics, val_metrics, writer, epoch):
 def write2tensorboard_test(test_metrics, writer):
     for key, val in test_metrics.items():
         writer.add_scalar(f'{key}/{key}_test', val)
+    # to let the writer write the metrics
+    sleep(10.)

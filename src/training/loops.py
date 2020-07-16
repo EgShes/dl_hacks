@@ -21,8 +21,8 @@ def train_epoch(model, loader, optimizer, criterion, device):
         optimizer.step()
 
         epoch_metrics['loss'] += loss.item()
-        epoch_metrics['accuracy'] += accuracy(pred, batch['label']).item()
-        epoch_metrics['macro_map'] += macro_average_precision(pred, batch['label']).item()
+        epoch_metrics['accuracy'] += accuracy(pred, batch['label'])
+        epoch_metrics['macro_map'] += macro_average_precision(pred, batch['label'])
 
     return {key: val / len(loader) for key, val in epoch_metrics.items()}
 
@@ -39,7 +39,7 @@ def evaluate_epoch(model, loader, criterion, device):
         loss = criterion(pred, batch['label'])
 
         epoch_metrics['loss'] += loss.item()
-        epoch_metrics['accuracy'] += accuracy(pred, batch['label']).item()
-        epoch_metrics['macro_map'] += macro_average_precision(pred, batch['label']).item()
+        epoch_metrics['accuracy'] += accuracy(pred, batch['label'])
+        epoch_metrics['macro_map'] += macro_average_precision(pred, batch['label'])
 
     return {key: val / len(loader) for key, val in epoch_metrics.items()}
