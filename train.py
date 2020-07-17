@@ -12,7 +12,9 @@ from torch.utils.tensorboard import SummaryWriter
 
 from src.data import DogClfDataset, Letterbox, VanillaResize
 from src.models import resnet50
-from src.training import RAdam, train_epoch, evaluate_epoch, fix_seeds, write2tensorboard, write2tensorboard_test
+from src.training import (
+    RAdam, train_epoch, evaluate_epoch, fix_seeds, write2tensorboard, write2tensorboard_test, LabelSmoothingLoss
+)
 
 
 @hydra.main('train_config.yaml')
@@ -60,7 +62,7 @@ def train_model(args):
     model.to(device)
 
     optimizer = RAdam(model.parameters(), args.learning_rate, weight_decay=args.weight_decay)
-    criterion = nn.CrossEntropyLoss()
+    criterion = LabelSmoothingLoss(120, args.label_smoothing)
 
     lr_scheduler = ReduceLROnPlateau(optimizer, factor=args.lr_factor, patience=args.lr_patience, verbose=True)
 
