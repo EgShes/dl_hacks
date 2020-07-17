@@ -87,7 +87,7 @@ def train_model(args):
 
         if not args.test_run:
             write2tensorboard(train_metrics, eval_metrics, writer, epoch)
-            writer.add_scalar('lr', optimizer.param_groups[0]['lr'])
+            writer.add_scalar('lr', optimizer.param_groups[0]['lr'], epoch)
 
     checkpoint = torch.load(osp.join(args.save_path, args.experiment_name, f'{experiment_name}_best.pth'))
     model.load_state_dict(checkpoint['model_state_dict'])
