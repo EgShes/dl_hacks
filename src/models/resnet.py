@@ -5,7 +5,8 @@ from torch.hub import load_state_dict_from_url
 
 __all__ = ['ResNet', 'resnet18', 'resnet34', 'resnet50', 'resnet101',
            'resnet152', 'resnext50_32x4d', 'resnext101_32x8d',
-           'wide_resnet50_2', 'wide_resnet101_2']
+           'wide_resnet50_2', 'wide_resnet101_2', 'freeze_resnet_backbone',
+           'unfreeze_resnet_backbone']
 
 
 model_urls = {
@@ -342,3 +343,19 @@ def wide_resnet101_2(pretrained=False, progress=True, **kwargs):
     kwargs['width_per_group'] = 64 * 2
     return _resnet('wide_resnet101_2', Bottleneck, [3, 4, 23, 3],
                    pretrained, progress, **kwargs)
+
+
+def set_resnet_backbone_state(model, requires_grad):
+    for name, param in model.named_parameters():
+        if 'fc' not in name:
+            param.requires_grad = requires_grad
+
+
+def freeze_resnet_backbone(model):
+    set_resnet_backbone_state(model, requires_grad=False)
+    print('backbone was frozen')
+
+
+def unfreeze_resnet_backbone(model):
+    set_resnet_backbone_state(model, requires_grad=True)
+    print('backbone was unfrozen')

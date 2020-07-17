@@ -5,5 +5,7 @@ from .resnet import (
     resnet101,
     resnet152,
     resnext50_32x4d,
-    resnext101_32x8d
+    resnext101_32x8d,
+    freeze_resnet_backbone,
+    unfreeze_resnet_backbone
 )

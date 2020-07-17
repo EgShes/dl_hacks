@@ -11,7 +11,7 @@ from torch.utils.data import DataLoader
 from torch.utils.tensorboard import SummaryWriter
 
 from src.data import DogClfDataset, Letterbox, VanillaResize
-from src.models import resnet50
+from src.models import resnet50, freeze_resnet_backbone, unfreeze_resnet_backbone
 from src.training import RAdam, train_epoch, evaluate_epoch, fix_seeds, write2tensorboard, write2tensorboard_test
 
 
@@ -68,6 +68,11 @@ def train_model(args):
     for epoch in range(args.num_epochs):
         if no_improvements > args.early_stopping:
             break
+
+        if epoch == 0:
+            freeze_resnet_backbone(model)
+        elif epoch == 2:
+            unfreeze_resnet_backbone(model)
 
         train_metrics = train_epoch(model, train_dl, optimizer, criterion, device)
         eval_metrics = evaluate_epoch(model, val_dl, criterion, device)
