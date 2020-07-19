@@ -10,7 +10,7 @@ from torch.optim.lr_scheduler import ReduceLROnPlateau
 from torch.utils.data import DataLoader
 from torch.utils.tensorboard import SummaryWriter
 
-from src.data import DogClfDataset, Letterbox, VanillaResize
+from src.data import DogClfDataset, Letterbox, VanillaResize, CutMixCrossEntropyLoss
 from src.models import resnet50
 from src.training import RAdam, train_epoch, evaluate_epoch, fix_seeds, write2tensorboard, write2tensorboard_test
 
@@ -43,14 +43,15 @@ def train_model(args):
 
     train_ds = DogClfDataset(
         osp.join(args.data_path, 'Images'), osp.join(args.data_path, 'lists', 'splitted_train_list.mat'),
+        cutmix_beta=args.cutmix_beta, cutmix_prob=args.cutmix_prob,
         transforms=default_transforms, resizer=resizer, test_run=args.test_run
     )
     val_ds = DogClfDataset(
         osp.join(args.data_path, 'Images'), osp.join(args.data_path, 'lists', 'splitted_val_list.mat'), resizer=resizer,
-        test_run=args.test_run
+        cutmix_beta=-1, cutmix_prob=args.cutmix_prob, test_run=args.test_run
     )
     test_ds = DogClfDataset(osp.join(args.data_path, 'Images'), osp.join(args.data_path, 'lists', 'test_list.mat'),
-                            resizer=resizer, test_run=args.test_run)
+                            cutmix_beta=-1, cutmix_prob=args.cutmix_prob, resizer=resizer, test_run=args.test_run)
 
     train_dl = DataLoader(train_ds, args.batch_size, shuffle=True, num_workers=args.num_workers)
     val_dl = DataLoader(val_ds, args.batch_size, num_workers=args.num_workers)
@@ -60,7 +61,7 @@ def train_model(args):
     model.to(device)
 
     optimizer = RAdam(model.parameters(), args.learning_rate, weight_decay=args.weight_decay)
-    criterion = nn.CrossEntropyLoss()
+    criterion = CutMixCrossEntropyLoss()
 
     lr_scheduler = ReduceLROnPlateau(optimizer, factor=args.lr_factor, patience=args.lr_patience, verbose=True)
 
