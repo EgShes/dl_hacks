@@ -7,7 +7,7 @@ num_workers: 6
 num_epochs: 40
 gpu_num: 0
 save_path: models
-experiment_name: test
+experiment_name: multilayer_loss
 seed: 21
 test_run: false
 # data

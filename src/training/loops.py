@@ -16,13 +16,16 @@ def train_epoch(model, loader, optimizer, criterion, device):
         optimizer.zero_grad()
 
         pred = model(batch['image'])
-        loss = criterion(pred, batch['label'])
+        loss = torch.tensor(0.).float().to(device)
+        for _, value in pred.items():
+            loss = loss + criterion(value, batch['label'])
+        loss = torch.div(loss, len(pred))
         loss.backward()
         optimizer.step()
 
         epoch_metrics['loss'] += loss.item()
-        epoch_metrics['accuracy'] += accuracy(pred, batch['label'])
-        epoch_metrics['macro_map'] += macro_average_precision(pred, batch['label'])
+        epoch_metrics['accuracy'] += accuracy(pred['out4'], batch['label'])
+        epoch_metrics['macro_map'] += macro_average_precision(pred['out4'], batch['label'])
 
     return {key: val / len(loader) for key, val in epoch_metrics.items()}
 
@@ -36,10 +39,13 @@ def evaluate_epoch(model, loader, criterion, device):
         batch = {key: val.to(device) for key, val in batch.items()}
 
         pred = model(batch['image'])
-        loss = criterion(pred, batch['label'])
+        loss = torch.tensor(0.).float().to(device)
+        for _, value in pred.items():
+            loss += criterion(value, batch['label'])
+        loss = torch.div(loss, len(pred))
 
         epoch_metrics['loss'] += loss.item()
-        epoch_metrics['accuracy'] += accuracy(pred, batch['label'])
-        epoch_metrics['macro_map'] += macro_average_precision(pred, batch['label'])
+        epoch_metrics['accuracy'] += accuracy(pred['out4'], batch['label'])
+        epoch_metrics['macro_map'] += macro_average_precision(pred['out4'], batch['label'])
 
     return {key: val / len(loader) for key, val in epoch_metrics.items()}
