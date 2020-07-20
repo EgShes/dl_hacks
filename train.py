@@ -69,7 +69,9 @@ def train_model(args):
         if no_improvements > args.early_stopping:
             break
 
-        train_metrics = train_epoch(model, train_dl, optimizer, criterion, device)
+        train_metrics = train_epoch(
+            model, train_dl, optimizer, criterion, device, args.fgsm_prob, (args.fgsm_epsilon_min, args.fgsm_epsilon_max)
+        )
         eval_metrics = evaluate_epoch(model, val_dl, criterion, device)
 
         if eval_metrics['loss'] < best_loss:

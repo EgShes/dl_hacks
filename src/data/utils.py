@@ -83,3 +83,17 @@ class VanillaResize:
         info = {'orig_size': image.shape}
         image = cv2.resize(image, (self.height, self.width))
         return image, info
+
+
+def perform_fgsm_attack(model, batch, criterion, epsilon, device):
+    batch = {key: val.to(device) for key, val in batch.items()}
+    batch['image'].requires_grad = True
+
+    pred = model(batch['image'])
+    model.zero_grad()
+    loss = criterion(pred, batch['label'])
+    loss.backward()
+    
+    batch['image'] = batch['image'] + epsilon * batch['image'].grad.sign()
+    batch['image'] = torch.clamp(batch['image'], 0, 1)
+    return batch

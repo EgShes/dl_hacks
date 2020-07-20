@@ -1,17 +1,25 @@
 from collections import defaultdict
 
 import torch
+from numpy.random import rand, uniform
 from tqdm import tqdm
+
+from src.data import perform_fgsm_attack
 
 from .metrics import accuracy, macro_average_precision
 
 
-def train_epoch(model, loader, optimizer, criterion, device):
+def train_epoch(model, loader, optimizer, criterion, device, fgsm_prob, fgsm_eps):
     model.train()
 
     epoch_metrics = defaultdict(lambda: 0.)
     for batch in tqdm(loader, desc='Training', total=len(loader)):
-        batch = {key: val.to(device) for key, val in batch.items()}
+        if rand() <= fgsm_prob:
+            batch = perform_fgsm_attack(
+                model, batch, criterion, uniform(*fgsm_eps), device
+            )
+        else:
+            batch = {key: val.to(device) for key, val in batch.items()}
 
         optimizer.zero_grad()
 
