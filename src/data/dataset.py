@@ -2,6 +2,7 @@ import os.path as osp
 
 import cv2
 import torch
+import numpy as np
 from torch.utils.data import Dataset
 import scipy.io
 from .utils import Normalize
@@ -30,7 +31,7 @@ class DogClfDataset(Dataset):
         image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
 
         if self.tramsforms is not None:
-            image = self.tramsforms(image=image)['image']
+            image = np.array(self.tramsforms(image))
 
         if self.resizer:
             image, info = self.resizer(image)

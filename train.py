@@ -5,10 +5,11 @@ import uuid
 import hydra
 import torch
 import torch.nn as nn
-from albumentations import Compose, RandomBrightnessContrast, HorizontalFlip, ShiftScaleRotate, ToGray
+from torchvision.transforms import Compose, RandomHorizontalFlip, ToPILImage
 from torch.optim.lr_scheduler import ReduceLROnPlateau
 from torch.utils.data import DataLoader
 from torch.utils.tensorboard import SummaryWriter
+from randaugment import RandAugment
 
 from src.data import DogClfDataset, Letterbox, VanillaResize
 from src.models import resnet50
@@ -28,10 +29,9 @@ def train_model(args):
     os.makedirs(osp.join(args.save_path, args.experiment_name), exist_ok=True)
 
     default_transforms = Compose([
-        RandomBrightnessContrast(),
-        HorizontalFlip(),
-        ShiftScaleRotate(),
-        ToGray(p=0.15)
+        ToPILImage(),
+        RandomHorizontalFlip(),
+        RandAugment(),
     ])
 
     if args.resizer_type == 'vanilla':
