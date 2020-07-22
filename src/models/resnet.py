@@ -2,6 +2,7 @@ import torch
 import torch.nn as nn
 from torch.hub import load_state_dict_from_url
 
+from .modules import DropBlock2D
 
 __all__ = ['ResNet', 'resnet18', 'resnet34', 'resnet50', 'resnet101',
            'resnet152', 'resnext50_32x4d', 'resnext101_32x8d',
@@ -157,6 +158,9 @@ class ResNet(nn.Module):
         self.avgpool = nn.AdaptiveAvgPool2d((1, 1))
         self.fc = nn.Linear(512 * block.expansion, num_classes)
 
+        self.drop1 = DropBlock2D(drop_prob=0.1, block_size=20)
+        self.drop2 = DropBlock2D(drop_prob=0.1, block_size=2)
+
         for m in self.modules():
             if isinstance(m, nn.Conv2d):
                 nn.init.kaiming_normal_(m.weight, mode='fan_out', nonlinearity='relu')
@@ -206,9 +210,11 @@ class ResNet(nn.Module):
         x = self.maxpool(x)
 
         x = self.layer1(x)
+        x = self.drop1(x)
         x = self.layer2(x)
         x = self.layer3(x)
         x = self.layer4(x)
+        x = self.drop2(x)
 
         x = self.avgpool(x)
         x = torch.flatten(x, 1)
