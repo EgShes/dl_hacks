@@ -1,5 +1,6 @@
 import torch
 import torch.nn as nn
+import torch.nn.functional as F
 from torch.hub import load_state_dict_from_url
 
 
@@ -125,7 +126,7 @@ class ResNet(nn.Module):
 
     def __init__(self, block, layers, num_classes=1000, zero_init_residual=False,
                  groups=1, width_per_group=64, replace_stride_with_dilation=None,
-                 norm_layer=None):
+                 norm_layer=None, confidence_budget=0.3, confidence_lambda=0.1):
         super(ResNet, self).__init__()
         if norm_layer is None:
             norm_layer = nn.BatchNorm2d
@@ -133,6 +134,8 @@ class ResNet(nn.Module):
 
         self.inplanes = 64
         self.dilation = 1
+        self.confidence_budget = confidence_budget
+        self.confidence_lambda = confidence_lambda
         if replace_stride_with_dilation is None:
             # each element in the tuple indicates if we should replace
             # the 2x2 stride with a dilated convolution instead
@@ -156,6 +159,7 @@ class ResNet(nn.Module):
                                        dilate=replace_stride_with_dilation[2])
         self.avgpool = nn.AdaptiveAvgPool2d((1, 1))
         self.fc = nn.Linear(512 * block.expansion, num_classes)
+        self.confidence_head = nn.Linear(512 * block.expansion, 1)
 
         for m in self.modules():
             if isinstance(m, nn.Conv2d):
@@ -198,6 +202,28 @@ class ResNet(nn.Module):
 
         return nn.Sequential(*layers)
 
+    @staticmethod
+    def use_confidence(logits, confidence_logits, labels):
+        labels_onehot = F.one_hot(labels, 120).to(torch.float)
+        b = torch.bernoulli(confidence_logits.new(confidence_logits.size()).uniform_(0, 1))
+        conf = confidence_logits * b + (1 - b)
+        pred_new = logits * conf.expand_as(logits) + labels_onehot * (1 - conf.expand_as(labels_onehot))
+        pred_new = torch.log(pred_new)
+        confidence_loss = torch.mean(-torch.log(confidence_logits))
+        return pred_new, confidence_loss
+
+    @staticmethod
+    def calc_new_lambda(lambda_, budget, confidence_loss):
+        if budget > confidence_loss:
+            lambda_ = lambda_ / 1.01
+        elif budget <= confidence_loss:
+            lambda_ = lambda_ / 0.99
+        return lambda_
+
+    @staticmethod
+    def clamp(tensors, epsilon):
+        return [torch.clamp(t, 0.0 + epsilon, 1.0 - epsilon) for t in tensors]
+
     def forward(self, x):
         # See note [TorchScript super()]
         x = self.conv1(x)
@@ -212,9 +238,10 @@ class ResNet(nn.Module):
 
         x = self.avgpool(x)
         x = torch.flatten(x, 1)
-        x = self.fc(x)
+        class_logits = self.fc(x)
+        confidence_logits = self.confidence_head(x)
 
-        return x
+        return class_logits, confidence_logits
 
 
 def _resnet(arch, block, layers, pretrained, progress, **kwargs):
