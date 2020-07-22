@@ -121,6 +121,23 @@ class Bottleneck(nn.Module):
         return out
 
 
+class MySPPPooling(nn.Module):
+
+    def __init__(self):
+        super().__init__()
+        self.pool1 = nn.AdaptiveMaxPool2d((1, 1))
+        self.pool2 = nn.AdaptiveMaxPool2d((2, 2))
+        self.pool3 = nn.AdaptiveMaxPool2d((3, 3))
+        self.features_up_coef = 14
+
+    def forward(self, inputs):
+        bs = inputs.shape[0]
+        pool1 = self.pool1(inputs).view(bs, -1)
+        pool2 = self.pool2(inputs).view(bs, -1)
+        pool3 = self.pool3(inputs).view(bs, -1)
+        return torch.cat([pool1, pool2, pool3], -1)
+
+
 class ResNet(nn.Module):
 
     def __init__(self, block, layers, num_classes=1000, zero_init_residual=False,
@@ -154,8 +171,8 @@ class ResNet(nn.Module):
                                        dilate=replace_stride_with_dilation[1])
         self.layer4 = self._make_layer(block, 512, layers[3], stride=2,
                                        dilate=replace_stride_with_dilation[2])
-        self.avgpool = nn.AdaptiveAvgPool2d((1, 1))
-        self.fc = nn.Linear(512 * block.expansion, num_classes)
+        self.avgpool = MySPPPooling()
+        self.fc = nn.Linear(512 * block.expansion * self.avgpool.features_up_coef, num_classes)
 
         for m in self.modules():
             if isinstance(m, nn.Conv2d):
