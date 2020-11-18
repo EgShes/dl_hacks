@@ -54,7 +54,7 @@ mistune==0.8.4
 nanotime==0.5.2
 nbformat==4.4.0
 networkx==2.3
-notebook==6.0.0
+notebook==6.1.5
 numpy==1.17.2
 omegaconf==1.4.1
 opencv-python==4.1.1.26
